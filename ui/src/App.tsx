@@ -40,22 +40,36 @@ function Sidebar() {
   );
 }
 
+import { useQuery } from '@tanstack/react-query';
+
 function Dashboard() {
+  const { data: metrics } = useQuery({
+    queryKey: ['metrics'],
+    queryFn: () => fetch('/api/metrics').then(res => res.json()),
+    refetchInterval: 2000
+  });
+
+  const { data: toolsData } = useQuery({
+    queryKey: ['tools'],
+    queryFn: () => fetch('/api/tools').then(res => res.json()),
+    refetchInterval: 5000
+  });
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6 text-slate-800">Dashboard</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <h3 className="text-sm font-medium text-slate-500 mb-2">Total Requests</h3>
-          <p className="text-3xl font-bold text-slate-800">0</p>
+          <p className="text-3xl font-bold text-slate-800">{metrics?.total_requests ?? 0}</p>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <h3 className="text-sm font-medium text-slate-500 mb-2">Active Tools</h3>
-          <p className="text-3xl font-bold text-slate-800">0</p>
+          <p className="text-3xl font-bold text-slate-800">{toolsData?.tools?.length ?? 0}</p>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <h3 className="text-sm font-medium text-slate-500 mb-2">Avg Latency</h3>
-          <p className="text-3xl font-bold text-slate-800">0 ms</p>
+          <p className="text-3xl font-bold text-slate-800">{metrics?.average_latency ?? 0} ms</p>
         </div>
       </div>
     </div>

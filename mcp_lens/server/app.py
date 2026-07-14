@@ -2,8 +2,14 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 import os
+from .api import router
+from ..storage.database import init_db
+
+# Initialize database schema
+init_db()
 
 app = FastAPI(title="MCP Lens", description="Developer Dashboard for Model Context Protocol")
+app.include_router(router)
 
 # Mount static files if they exist (for when the React app is built)
 static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
