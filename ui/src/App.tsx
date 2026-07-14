@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Activity, LayoutDashboard, Wrench, Database, MessageSquare, History, BarChart3, Settings } from 'lucide-react';
 
 const queryClient = new QueryClient();
@@ -89,26 +90,49 @@ function PlaceholderPage({ title }: { title: string }) {
 
 import ToolExplorer from './components/ToolExplorer';
 import HistoryPage from './components/History';
+import Resources from './components/Resources';
+import Prompts from './components/Prompts';
 
-export default function App() {
+function AppContent() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const wsUrl = (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.host + '/ws/events';
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onmessage = () => {
+      // Refresh data globally when an event occurs
+      queryClient.invalidateQueries({ queryKey: ['history'] });
+      queryClient.invalidateQueries({ queryKey: ['metrics'] });
+    };
+
+    return () => ws.close();
+  }, [queryClient]);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename="/mcp">
         <div className="flex h-screen bg-slate-50 font-sans">
           <Sidebar />
           <main className="flex-1 overflow-auto">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/tools" element={<ToolExplorer />} />
-              <Route path="/resources" element={<PlaceholderPage title="Resource Explorer" />} />
-              <Route path="/prompts" element={<PlaceholderPage title="Prompt Explorer" />} />
+              <Route path="/resources" element={<Resources />} />
+              <Route path="/prompts" element={<Prompts />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/metrics" element={<PlaceholderPage title="Metrics" />} />
               <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
             </Routes>
           </main>
         </div>
-      </BrowserRouter>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <AppContent />
+      </Router>
     </QueryClientProvider>
   );
 }

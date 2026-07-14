@@ -34,7 +34,32 @@ def instrument(mcp_app, ui: bool = True, ui_port: int = 8000, history: bool = Tr
                             "inputSchema": getattr(t, "inputSchema", {})
                         })
                     app_state.tools = tools_data
+                    
+                if hasattr(mcp_app, "list_resources"):
+                    resources = await mcp_app.list_resources()
+                    resources_data = []
+                    for r in resources:
+                        resources_data.append({
+                            "uri": str(getattr(r, "uri", "unknown")),
+                            "name": getattr(r, "name", ""),
+                            "description": getattr(r, "description", ""),
+                            "mimeType": getattr(r, "mimeType", "")
+                        })
+                    app_state.resources = resources_data
+                    
+                if hasattr(mcp_app, "list_prompts"):
+                    prompts = await mcp_app.list_prompts()
+                    prompts_data = []
+                    for p in prompts:
+                        args = getattr(p, "arguments", [])
+                        prompts_data.append({
+                            "name": getattr(p, "name", "unknown"),
+                            "description": getattr(p, "description", ""),
+                            "arguments": [{"name": a.name, "description": getattr(a, "description", ""), "required": getattr(a, "required", False)} for a in args] if args else []
+                        })
+                    app_state.prompts = prompts_data
             except Exception as e:
+                print(f"Error populating state: {e}")
                 pass
         try:
             asyncio.run(_run())
