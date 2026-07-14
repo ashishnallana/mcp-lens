@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import Editor from '@monaco-editor/react';
-import { Play, CheckCircle2, XCircle } from 'lucide-react';
+import { Play, CheckCircle2, XCircle, Lock, Unlock } from 'lucide-react';
 
 export default function ToolExplorer() {
   const [selectedTool, setSelectedTool] = useState<any>(null);
-  const [editorValue, setEditorValue] = useState('{\n  \n}');
+  const [formValues, setFormValues] = useState<Record<string, any>>({});
+  
+  // Swagger-style Auth state
+  const [authToken, setAuthToken] = useState(localStorage.getItem('mcp_auth_token') || '');
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [tempToken, setTempToken] = useState('');
 
   const { data: toolsData, isLoading } = useQuery({
     queryKey: ['tools'],
@@ -14,9 +18,14 @@ export default function ToolExplorer() {
 
   const invokeMutation = useMutation({
     mutationFn: async (payload: any) => {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+      
       const res = await fetch('/api/invoke', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           tool_name: selectedTool.name,
           arguments: payload
@@ -26,112 +35,241 @@ export default function ToolExplorer() {
     }
   });
 
-  if (isLoading) return <div className="p-8">Loading tools...</div>;
+  if (isLoading) return <div className="p-8 text-slate-500 font-medium">Loading tools...</div>;
 
   const tools = toolsData?.tools || [];
 
   const handleExecute = () => {
-    try {
-      const payload = JSON.parse(editorValue);
-      invokeMutation.mutate(payload);
-    } catch (e) {
-      alert("Invalid JSON payload");
-    }
+    // Process form values based on schema (e.g. handle empty strings for optional fields)
+    const payload = { ...formValues };
+    Object.keys(payload).forEach(key => {
+      if (payload[key] === '') delete payload[key];
+    });
+    invokeMutation.mutate(payload);
+  };
+
+  const saveAuth = () => {
+    setAuthToken(tempToken);
+    localStorage.setItem('mcp_auth_token', tempToken);
+    setShowAuthModal(false);
+  };
+
+  const logoutAuth = () => {
+    setAuthToken('');
+    localStorage.removeItem('mcp_auth_token');
+    setShowAuthModal(false);
   };
 
   return (
-    <div className="flex h-full">
-      {/* Tool List Sidebar */}
-      <div className="w-1/3 border-r border-slate-200 bg-white overflow-y-auto">
-        <div className="p-4 border-b border-slate-100 bg-slate-50 font-semibold text-slate-700">
-          Available Tools ({tools.length})
-        </div>
-        <div className="divide-y divide-slate-100">
-          {tools.map((tool: any) => (
-            <div 
-              key={tool.name}
-              onClick={() => {
-                setSelectedTool(tool);
-                setEditorValue('{\n  \n}');
-                invokeMutation.reset();
-              }}
-              className={`p-4 cursor-pointer hover:bg-indigo-50 transition-colors ${selectedTool?.name === tool.name ? 'bg-indigo-50 border-l-4 border-indigo-600' : 'border-l-4 border-transparent'}`}
-            >
-              <h3 className="font-medium text-slate-800">{tool.name}</h3>
-              <p className="text-xs text-slate-500 mt-1 truncate">{tool.description}</p>
-            </div>
-          ))}
-        </div>
+    <div className="flex h-full flex-col bg-slate-50">
+      
+      {/* Top Bar - Swagger Style */}
+      <div className="bg-white border-b border-slate-200 p-4 flex justify-between items-center shrink-0">
+        <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <span className="bg-emerald-500 text-white px-2 py-0.5 rounded text-sm font-mono">MCP</span>
+          API Explorer
+        </h1>
+        <button 
+          onClick={() => {
+            setTempToken(authToken);
+            setShowAuthModal(true);
+          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md font-bold text-sm border-2 transition-colors ${authToken ? 'border-emerald-500 text-emerald-600 hover:bg-emerald-50' : 'border-indigo-500 text-indigo-600 hover:bg-indigo-50'}`}
+        >
+          {authToken ? <Lock size={16} /> : <Unlock size={16} />}
+          Authorize
+        </button>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col bg-slate-50">
-        {selectedTool ? (
-          <>
-            <div className="p-6 bg-white border-b border-slate-200">
-              <h2 className="text-xl font-bold text-slate-800 mb-2">{selectedTool.name}</h2>
-              <p className="text-sm text-slate-600 mb-4">{selectedTool.description}</p>
-              
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <h4 className="text-xs font-semibold text-slate-500 uppercase mb-2">Input Schema</h4>
-                <pre className="text-xs text-slate-700 whitespace-pre-wrap font-mono">
-                  {JSON.stringify(selectedTool.inputSchema, null, 2)}
-                </pre>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Tool List Sidebar */}
+        <div className="w-80 border-r border-slate-200 bg-white overflow-y-auto">
+          <div className="divide-y divide-slate-100">
+            {tools.map((tool: any) => (
+              <div 
+                key={tool.name}
+                onClick={() => {
+                  setSelectedTool(tool);
+                  setFormValues({});
+                  invokeMutation.reset();
+                }}
+                className={`p-4 cursor-pointer hover:bg-slate-50 transition-colors ${selectedTool?.name === tool.name ? 'bg-slate-50 border-l-4 border-emerald-500' : 'border-l-4 border-transparent'}`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase">POST</span>
+                  <h3 className="font-semibold text-slate-800 truncate">{tool.name}</h3>
+                </div>
+                <p className="text-xs text-slate-500 mt-2 line-clamp-2">{tool.description}</p>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            <div className="flex-1 p-6 flex flex-col gap-4 overflow-y-auto">
-              <div className="flex-1 min-h-[200px] border border-slate-200 rounded-lg overflow-hidden bg-white flex flex-col">
-                 <div className="p-3 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
-                    <span className="text-sm font-medium text-slate-700">Arguments (JSON)</span>
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-y-auto p-8">
+          {selectedTool ? (
+            <div className="max-w-4xl mx-auto space-y-6">
+              
+              {/* Endpoint Header */}
+              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                <div className="bg-blue-50 border-b border-blue-100 p-4 flex items-center gap-3">
+                  <span className="bg-blue-600 text-white px-3 py-1 rounded font-bold text-sm">POST</span>
+                  <span className="font-mono text-slate-700 font-semibold text-lg">/{selectedTool.name}</span>
+                </div>
+                <div className="p-6">
+                  <p className="text-slate-600 text-base">{selectedTool.description}</p>
+                </div>
+              </div>
+
+              {/* Parameters / Try it out */}
+              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                  <h3 className="font-bold text-slate-800 text-lg">Parameters</h3>
+                </div>
+                
+                <div className="p-6">
+                  {selectedTool.inputSchema?.properties && Object.keys(selectedTool.inputSchema.properties).length > 0 ? (
+                    <table className="w-full text-left text-sm border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-200">
+                          <th className="py-3 text-slate-800 font-bold w-1/4">Name</th>
+                          <th className="py-3 text-slate-800 font-bold">Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(selectedTool.inputSchema.properties).map(([key, schema]: [string, any]) => {
+                          const isRequired = (selectedTool.inputSchema.required || []).includes(key);
+                          return (
+                            <tr key={key} className="border-b border-slate-100 last:border-0">
+                              <td className="py-4 align-top pr-4">
+                                <div className="font-bold text-slate-800 text-sm">
+                                  {key}
+                                  {isRequired && <span className="text-red-500 ml-1">*</span>}
+                                </div>
+                                <div className="text-xs text-slate-500 font-mono mt-1">{schema.type}</div>
+                              </td>
+                              <td className="py-4 align-top">
+                                <div className="text-slate-600 mb-2 font-medium">{schema.description || schema.title}</div>
+                                <input
+                                  type={schema.type === 'number' || schema.type === 'integer' ? 'number' : 'text'}
+                                  className="w-full p-2.5 border border-slate-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm shadow-sm font-mono"
+                                  placeholder={String(schema.default || '')}
+                                  value={formValues[key] || ''}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setFormValues({...formValues, [key]: (schema.type === 'number' || schema.type === 'integer') ? (val ? Number(val) : '') : val})
+                                  }}
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="text-slate-500 italic py-4">No parameters required.</div>
+                  )}
+
+                  <div className="mt-8 pt-6 border-t border-slate-200">
                     <button 
                       onClick={handleExecute}
                       disabled={invokeMutation.isPending}
-                      className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded text-sm font-medium transition-colors disabled:opacity-50"
+                      className="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-bold text-base transition-colors shadow-sm disabled:opacity-50"
                     >
-                      <Play size={16} />
+                      <Play size={18} />
                       {invokeMutation.isPending ? 'Executing...' : 'Execute'}
                     </button>
-                 </div>
-                 <div className="flex-1">
-                   <Editor
-                      height="100%"
-                      defaultLanguage="json"
-                      value={editorValue}
-                      onChange={(val) => setEditorValue(val || '')}
-                      options={{
-                        minimap: { enabled: false },
-                        scrollBeyondLastLine: false,
-                        fontSize: 13,
-                        lineNumbers: 'off',
-                        folding: false
-                      }}
-                    />
-                 </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Result Area */}
+              {/* Responses */}
               {invokeMutation.data && (
-                <div className="flex-1 border border-slate-200 rounded-lg bg-white overflow-hidden flex flex-col min-h-[200px]">
-                  <div className={`p-3 border-b border-slate-200 flex items-center gap-2 ${invokeMutation.data.error ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
-                    {invokeMutation.data.error ? <XCircle size={18} /> : <CheckCircle2 size={18} />}
-                    <span className="text-sm font-medium">Execution Result</span>
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                   <div className="p-4 border-b border-slate-200 bg-slate-50">
+                    <h3 className="font-bold text-slate-800 text-lg">Server Response</h3>
                   </div>
-                  <div className="flex-1 p-4 overflow-auto">
-                    <pre className="text-sm font-mono text-slate-800 whitespace-pre-wrap">
-                      {JSON.stringify(invokeMutation.data, null, 2)}
-                    </pre>
+                  <div className="p-6">
+                    <div className={`p-4 rounded-md mb-4 flex items-center gap-2 ${invokeMutation.data.error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+                      {invokeMutation.data.error ? <XCircle size={20} /> : <CheckCircle2 size={20} />}
+                      <span className="font-bold">Code: {invokeMutation.data.error ? '500 Internal Server Error' : '200 OK'}</span>
+                    </div>
+                    <div className="bg-slate-900 rounded-lg p-4 overflow-x-auto shadow-inner">
+                      <pre className="text-sm font-mono text-emerald-400 whitespace-pre-wrap">
+                        {JSON.stringify(invokeMutation.data, null, 2)}
+                      </pre>
+                    </div>
                   </div>
                 </div>
               )}
+
             </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-slate-400">
-            Select a tool to explore and test
-          </div>
-        )}
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center text-slate-400">
+              <div className="bg-slate-200 p-4 rounded-full mb-4">
+                <Play size={32} className="text-slate-400 ml-1" />
+              </div>
+              <p className="text-lg font-medium text-slate-500">Select an endpoint to explore</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-[500px] overflow-hidden">
+            <div className="border-b border-slate-200 p-4 flex justify-between items-center bg-slate-50">
+              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <Lock size={20} className="text-slate-500" />
+                Available authorizations
+              </h2>
+              <button onClick={() => setShowAuthModal(false)} className="text-slate-400 hover:text-slate-600">
+                <XCircle size={24} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <h4 className="font-bold text-slate-800">Bearer Auth (OAuth2 / HTTP)</h4>
+                <p className="text-sm text-slate-500">Enter your Bearer token below. It will be passed in the Authorization header to the server.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Value:</label>
+                <input 
+                  type="text"
+                  placeholder="eyJhbGciOiJIUzI1NiIsIn..."
+                  value={tempToken}
+                  onChange={(e) => setTempToken(e.target.value)}
+                  className="w-full p-2 border border-slate-300 rounded font-mono text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+            <div className="border-t border-slate-200 p-4 flex justify-end gap-3 bg-slate-50">
+              {authToken && (
+                <button 
+                  onClick={logoutAuth}
+                  className="px-4 py-2 text-slate-600 font-bold hover:bg-slate-200 rounded transition-colors mr-auto"
+                >
+                  Logout
+                </button>
+              )}
+              <button 
+                onClick={() => setShowAuthModal(false)}
+                className="px-4 py-2 text-slate-600 font-bold hover:bg-slate-200 rounded transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={saveAuth}
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded shadow-sm transition-colors"
+              >
+                Authorize
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
