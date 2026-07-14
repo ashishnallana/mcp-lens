@@ -87,6 +87,9 @@ function PlaceholderPage({ title }: { title: string }) {
   );
 }
 
+import ToolExplorer from './components/ToolExplorer';
+import HistoryPage from './components/History';
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -96,10 +99,10 @@ export default function App() {
           <main className="flex-1 overflow-auto">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/tools" element={<PlaceholderPage title="Tool Explorer" />} />
+              <Route path="/tools" element={<ToolExplorer />} />
               <Route path="/resources" element={<PlaceholderPage title="Resource Explorer" />} />
               <Route path="/prompts" element={<PlaceholderPage title="Prompt Explorer" />} />
-              <Route path="/history" element={<PlaceholderPage title="History" />} />
+              <Route path="/history" element={<HistoryPage />} />
               <Route path="/metrics" element={<PlaceholderPage title="Metrics" />} />
               <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
             </Routes>

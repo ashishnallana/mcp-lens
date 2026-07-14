@@ -18,6 +18,7 @@ def instrument(mcp_app, ui: bool = True, ui_port: int = 8000, history: bool = Tr
     print(f"Instrumenting {getattr(mcp_app, 'name', 'MCP App')} with MCP Lens...")
     
     app_state.server_info["name"] = getattr(mcp_app, "name", "MCP App")
+    app_state.mcp_app = mcp_app
     
     # Pre-populate tools by awaiting the server's list_tools coroutine
     def _populate_state():

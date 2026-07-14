@@ -12,6 +12,7 @@ class AppState:
         self.resources: List[Dict[str, Any]] = []
         self.prompts: List[Dict[str, Any]] = []
         self.active_connections: List[Any] = []
+        self.mcp_app = None
 
     async def broadcast(self, message: dict):
         """Broadcast an event to all connected UI clients."""
