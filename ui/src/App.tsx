@@ -77,21 +77,14 @@ function Dashboard() {
   );
 }
 
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div className="p-8 flex items-center justify-center h-full">
-      <div className="text-center text-slate-500">
-        <h2 className="text-2xl font-bold mb-2">{title}</h2>
-        <p>Coming soon</p>
-      </div>
-    </div>
-  );
-}
+
 
 import ToolExplorer from './components/ToolExplorer';
 import HistoryPage from './components/History';
 import Resources from './components/Resources';
 import Prompts from './components/Prompts';
+import Metrics from './components/Metrics';
+import SettingsPage from './components/Settings';
 
 function AppContent() {
   const queryClient = useQueryClient();
@@ -119,8 +112,8 @@ function AppContent() {
               <Route path="/resources" element={<Resources />} />
               <Route path="/prompts" element={<Prompts />} />
               <Route path="/history" element={<HistoryPage />} />
-              <Route path="/metrics" element={<PlaceholderPage title="Metrics" />} />
-              <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
+              <Route path="/metrics" element={<Metrics />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </main>
         </div>
