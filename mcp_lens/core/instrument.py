@@ -28,10 +28,18 @@ def instrument(mcp_app, ui: bool = True, ui_port: int = 8000, history: bool = Tr
                     tools = await mcp_app.list_tools()
                     tools_data = []
                     for t in tools:
+                        # FastMCP tools typically have a to_mcp_tool() method
+                        input_schema = {}
+                        if hasattr(t, "to_mcp_tool"):
+                            mcp_tool = t.to_mcp_tool()
+                            input_schema = getattr(mcp_tool, "inputSchema", {})
+                        else:
+                            input_schema = getattr(t, "inputSchema", getattr(t, "parameters", {}))
+                            
                         tools_data.append({
                             "name": getattr(t, "name", "unknown"),
                             "description": getattr(t, "description", ""),
-                            "inputSchema": getattr(t, "inputSchema", {})
+                            "inputSchema": input_schema
                         })
                     app_state.tools = tools_data
                     
