@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-lens"
+version = "0.1.0"
+description = "Swagger UI & Developer Tools for the Model Context Protocol"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.0.0",
+    "fastmcp>=0.1.0", # Assuming compatibility with fastmcp
+    "mcp>=0.1.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "httpx",
+    "websockets"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["mcp_lens"]
+include = [
+    "mcp_lens/static/**/*"
+]
