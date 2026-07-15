@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+htmlcov/
+
+# Database
+*.db
+mcp_lens.db
+*.sqlite3
+
+# Frontend (UI / Vite)
+ui/node_modules/
+ui/dist/
+ui/dist-ssr/
+ui/*.local
+ui/.eslintcache
+
+# Static Output (built by Vite)
+# We might want to track this if distributing without requiring npm build,
+# but usually it's ignored and built in CI/CD. Let's ignore it for now to avoid merge conflicts.
+# mcp_lens/static/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
