@@ -166,7 +166,14 @@ async def get_prompt(req: GetPromptRequest):
         return {"error": "Server not found"}
     mcp_app = app_state.servers[req.server_name]
     try:
-        if hasattr(mcp_app, "get_prompt"):
+        if hasattr(mcp_app, "render_prompt"):
+            result = await mcp_app.render_prompt(req.prompt_name, req.arguments)
+            if hasattr(result, "model_dump"):
+                return {"result": result.model_dump()}
+            elif hasattr(result, "dict"):
+                return {"result": result.dict()}
+            return {"result": str(result)}
+        elif hasattr(mcp_app, "get_prompt"):
             result = await mcp_app.get_prompt(req.prompt_name, req.arguments)
             if hasattr(result, "model_dump"):
                 return {"result": result.model_dump()}
