@@ -18,7 +18,10 @@ function Sidebar() {
   return (
     <div className="w-64 border-r flex flex-col" style={{ backgroundColor: '#0B0F14', borderColor: '#1e293b' }}>
       <div className="p-6 flex items-center justify-center border-b" style={{ borderColor: '#1e293b' }}>
-        <span className="text-xl font-bold tracking-widest text-white uppercase">MCP Lens</span>
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="MCP Lens Logo" className="w-8 h-8 rounded-lg" />
+          <span className="text-xl font-bold tracking-widest text-white uppercase">MCP Lens</span>
+        </div>
       </div>
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => (
