@@ -4,6 +4,7 @@ import {
   ChevronRight, Package, Copy, Check
 } from 'lucide-react';
 import './index.css';
+import heroImg from './assets/img1.png';
 
 const Github = ({ size = 24, ...props }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -65,41 +66,13 @@ const Hero = () => (
       </div>
       
       {/* UI Mockup */}
-      <div style={{ position: 'relative', margin: '0 auto', maxWidth: '900px', animation: 'float 6s ease-in-out infinite' }}>
+      <div style={{ position: 'relative', margin: '0 auto', maxWidth: '1000px', animation: 'float 6s ease-in-out infinite' }}>
         <div style={{ position: 'absolute', inset: -20, background: 'linear-gradient(180deg, var(--color-primary), transparent)', filter: 'blur(40px)', opacity: 0.2, borderRadius: '24px', zIndex: 0 }} />
-        <div className="code-window" style={{ position: 'relative', zIndex: 1, backgroundColor: '#0B0F14' }}>
-          <div className="code-header">
-            <div className="code-dot red" />
-            <div className="code-dot yellow" />
-            <div className="code-dot green" />
-            <div style={{ marginLeft: 'auto', fontSize: '12px', color: '#6B7280' }}>localhost:8000/mcp-lens</div>
-          </div>
-          <div style={{ display: 'flex', height: '400px', borderTop: '1px solid var(--color-border)' }}>
-            {/* Sidebar Mock */}
-            <div style={{ width: '250px', borderRight: '1px solid var(--color-border)', padding: '20px', background: 'rgba(255,255,255,0.02)' }}>
-              <div style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--color-highlight)', fontWeight: 700, marginBottom: '16px' }}>Tools</div>
-              <div style={{ padding: '8px 12px', background: 'var(--color-primary)', borderRadius: '6px', color: '#000', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>get_weather</div>
-              <div style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: '14px', fontWeight: 500 }}>search_database</div>
-            </div>
-            {/* Main Mock */}
-            <div style={{ flex: 1, padding: '40px', textAlign: 'left' }}>
-              <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>get_weather</h2>
-              <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px' }}>Get the current weather for a specific location.</p>
-              
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>latitude <span style={{ color: '#EF4444' }}>*</span></label>
-                  <div style={{ background: '#000', border: '1px solid #374151', padding: '8px 12px', borderRadius: '4px', color: '#fff' }}>52.52</div>
-                </div>
-                <div style={{ marginBottom: '24px' }}>
-                  <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>longitude <span style={{ color: '#EF4444' }}>*</span></label>
-                  <div style={{ background: '#000', border: '1px solid #374151', padding: '8px 12px', borderRadius: '4px', color: '#fff' }}>13.41</div>
-                </div>
-                <button className="btn-primary" style={{ width: '100%', padding: '10px' }}>Execute Tool</button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <img 
+          src={heroImg} 
+          alt="MCP Lens Dashboard" 
+          style={{ position: 'relative', zIndex: 1, width: '100%', borderRadius: '12px', border: '1px solid var(--color-border)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }} 
+        />
       </div>
     </div>
   </section>
