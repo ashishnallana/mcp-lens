@@ -44,7 +44,7 @@ const Hero = () => (
     
     <div className="container">
       <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid var(--color-border)', color: 'var(--color-highlight)', fontSize: '14px', fontWeight: 600, marginBottom: '24px' }}>
-        ✨ v0.1.2 is now live on PyPI
+        ✨ v0.1.3 is now live on PyPI
       </div>
       
       <h1 style={{ fontSize: '4rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '24px', letterSpacing: '-0.02em' }}>
