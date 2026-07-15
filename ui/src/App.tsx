@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { Activity, LayoutDashboard, Wrench, Database, MessageSquare, History, Settings } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import { QueryClient, QueryClientProvider, useQueryClient, useQuery } from '@tanstack/react-query';
+import { LayoutDashboard, Wrench, Database, MessageSquare, History, Settings } from 'lucide-react';
 
 const queryClient = new QueryClient();
 
@@ -16,31 +16,34 @@ function Sidebar() {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-slate-200 h-screen flex flex-col">
-      <div className="p-6 flex items-center gap-3 text-indigo-600 border-b border-slate-100">
-        <Activity size={28} />
-        <span className="text-xl font-bold tracking-tight">MCP Lens</span>
+    <div className="w-64 border-r flex flex-col" style={{ backgroundColor: '#0B0F14', borderColor: '#1e293b' }}>
+      <div className="p-6 flex items-center justify-center border-b" style={{ borderColor: '#1e293b' }}>
+        <span className="text-xl font-bold tracking-widest text-white uppercase">MCP Lens</span>
       </div>
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => (
-          <Link
+          <NavLink
             key={item.name}
             to={item.path}
-            className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-indigo-600 transition-colors"
+            className={({ isActive }) => 
+              `flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                isActive 
+                  ? 'bg-amber-500/10 text-amber-500 border-l-2 border-amber-500' 
+                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+              }`
+            }
           >
             {item.icon}
             {item.name}
-          </Link>
+          </NavLink>
         ))}
       </nav>
-      <div className="p-4 text-xs text-slate-400 border-t border-slate-100">
+      <div className="p-4 text-xs text-slate-500 border-t" style={{ borderColor: '#1e293b' }}>
         v0.1.0-alpha
       </div>
     </div>
   );
 }
-
-import { useQuery } from '@tanstack/react-query';
 
 function Dashboard() {
   const { data: metrics } = useQuery({
@@ -70,53 +73,51 @@ function Dashboard() {
   const totalPrompts = Object.values(promptsData?.prompts || {}).reduce((acc: number, arr: any) => acc + arr.length, 0);
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6 text-slate-800">Dashboard</h1>
+    <div className="p-8 h-full overflow-y-auto" style={{ backgroundColor: '#0B0F14' }}>
+      <h1 className="text-2xl font-bold mb-6 text-white">Dashboard</h1>
       
-      <h2 className="text-lg font-semibold text-slate-700 mb-4">Connected Context</h2>
+      <h2 className="text-lg font-semibold text-slate-300 mb-4">Connected Context</h2>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-indigo-500">
-          <h3 className="text-sm font-medium text-slate-500 mb-2">Connected Servers</h3>
-          <p className="text-3xl font-bold text-slate-800">{totalServers}</p>
+        <div className="p-6 rounded-xl shadow-sm border-l-4" style={{ backgroundColor: '#131B24', borderColor: '#F59E0B' }}>
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Connected Servers</h3>
+          <p className="text-3xl font-bold text-white">{totalServers}</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
-          <h3 className="text-sm font-medium text-slate-500 mb-2">Active Tools</h3>
-          <p className="text-3xl font-bold text-slate-800">{totalTools}</p>
+        <div className="p-6 rounded-xl shadow-sm border-l-4" style={{ backgroundColor: '#131B24', borderColor: '#FBBF24' }}>
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Active Tools</h3>
+          <p className="text-3xl font-bold text-white">{totalTools}</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-emerald-500">
-          <h3 className="text-sm font-medium text-slate-500 mb-2">Active Resources</h3>
-          <p className="text-3xl font-bold text-slate-800">{totalResources}</p>
+        <div className="p-6 rounded-xl shadow-sm border-l-4" style={{ backgroundColor: '#131B24', borderColor: '#D97706' }}>
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Active Resources</h3>
+          <p className="text-3xl font-bold text-white">{totalResources}</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-amber-500">
-          <h3 className="text-sm font-medium text-slate-500 mb-2">Active Prompts</h3>
-          <p className="text-3xl font-bold text-slate-800">{totalPrompts}</p>
+        <div className="p-6 rounded-xl shadow-sm border-l-4" style={{ backgroundColor: '#131B24', borderColor: '#F59E0B' }}>
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Active Prompts</h3>
+          <p className="text-3xl font-bold text-white">{totalPrompts}</p>
         </div>
       </div>
 
-      <h2 className="text-lg font-semibold text-slate-700 mb-4">Execution Metrics</h2>
+      <h2 className="text-lg font-semibold text-slate-300 mb-4">Execution Metrics</h2>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="text-sm font-medium text-slate-500 mb-2">Total Requests</h3>
-          <p className="text-3xl font-bold text-slate-800">{metrics?.total_requests ?? 0}</p>
+        <div className="p-6 rounded-xl shadow-sm border" style={{ backgroundColor: '#131B24', borderColor: '#1e293b' }}>
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Total Requests</h3>
+          <p className="text-3xl font-bold text-white">{metrics?.total_requests ?? 0}</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="text-sm font-medium text-slate-500 mb-2">Avg Latency</h3>
-          <p className="text-3xl font-bold text-slate-800">{metrics?.average_latency ?? 0} ms</p>
+        <div className="p-6 rounded-xl shadow-sm border" style={{ backgroundColor: '#131B24', borderColor: '#1e293b' }}>
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Avg Latency</h3>
+          <p className="text-3xl font-bold text-white">{metrics?.average_latency ?? 0} ms</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="text-sm font-medium text-slate-500 mb-2">Success Rate</h3>
-          <p className="text-3xl font-bold text-emerald-600">{metrics?.success_rate ?? 100}%</p>
+        <div className="p-6 rounded-xl shadow-sm border" style={{ backgroundColor: '#131B24', borderColor: '#1e293b' }}>
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Success Rate</h3>
+          <p className="text-3xl font-bold text-emerald-400">{metrics?.success_rate ?? 100}%</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="text-sm font-medium text-slate-500 mb-2">Error Rate</h3>
-          <p className="text-3xl font-bold text-rose-600">{metrics?.error_rate ?? 0}%</p>
+        <div className="p-6 rounded-xl shadow-sm border" style={{ backgroundColor: '#131B24', borderColor: '#1e293b' }}>
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Error Rate</h3>
+          <p className="text-3xl font-bold text-rose-400">{metrics?.error_rate ?? 0}%</p>
         </div>
       </div>
     </div>
   );
 }
-
-
 
 import ToolExplorer from './components/ToolExplorer';
 import HistoryPage from './components/History';
@@ -141,7 +142,7 @@ function AppContent() {
   }, [queryClient]);
 
   return (
-        <div className="flex h-screen bg-slate-50 font-sans">
+        <div className="flex h-screen text-slate-200 font-sans" style={{ backgroundColor: '#0B0F14' }}>
           <Sidebar />
           <main className="flex-1 overflow-auto">
             <Routes>

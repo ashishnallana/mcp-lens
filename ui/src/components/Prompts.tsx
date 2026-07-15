@@ -43,19 +43,20 @@ export default function Prompts() {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full" style={{ backgroundColor: '#0B0F14' }}>
       {/* Sidebar */}
-      <div className="w-80 bg-white border-r border-slate-200 flex flex-col h-full">
-        <div className="p-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
-          <h2 className="font-bold text-slate-700 mb-3">Prompts Explorer</h2>
+      <div className="w-80 border-r flex flex-col h-full" style={{ backgroundColor: '#0B0F14', borderColor: '#1e293b' }}>
+        <div className="p-4 border-b flex-shrink-0" style={{ backgroundColor: '#131B24', borderColor: '#1e293b' }}>
+          <h2 className="font-bold text-slate-300 mb-3">Prompts Explorer</h2>
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 text-slate-400" size={14} />
+            <Search className="absolute left-2.5 top-2.5 text-slate-500" size={14} />
             <input 
               type="text" 
               placeholder="Search prompts..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+              className="w-full pl-8 pr-3 py-2 rounded shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-shadow text-white"
+              style={{ backgroundColor: '#0B0F14', borderColor: '#1e293b', borderWidth: 1 }}
             />
           </div>
         </div>
@@ -74,16 +75,17 @@ export default function Prompts() {
             const isExpanded = expandedServers[serverName] !== false;
             
             return (
-              <div key={serverName} className="border-b border-slate-100 last:border-b-0">
+              <div key={serverName} className="border-b last:border-b-0" style={{ borderColor: '#1e293b' }}>
                 <div 
                   onClick={() => toggleServer(serverName)}
-                  className="px-4 py-3 bg-slate-50 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors sticky top-0 z-10 border-y border-slate-200"
+                  className="px-4 py-3 flex items-center justify-between cursor-pointer transition-colors sticky top-0 z-10 border-y"
+                  style={{ backgroundColor: '#131B24', borderColor: '#1e293b' }}
                 >
-                  <div className="flex items-center gap-2 font-bold text-sm text-slate-700">
+                  <div className="flex items-center gap-2 font-bold text-sm text-slate-300 hover:text-white transition-colors">
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                     <span>{serverName}</span>
                   </div>
-                  <span className="bg-slate-300 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">{serverPrompts.length}</span>
+                  <span className="px-1.5 py-0.5 rounded text-[10px] text-slate-400" style={{ backgroundColor: '#0B0F14' }}>{serverPrompts.length}</span>
                 </div>
                 
                 {isExpanded && (
@@ -98,16 +100,17 @@ export default function Prompts() {
                         }}
                         className={`px-4 py-3 cursor-pointer text-sm transition-colors border-l-4 ${
                           selectedPrompt?.name === prompt.name 
-                            ? 'bg-blue-50 border-blue-500' 
-                            : 'border-transparent hover:bg-slate-50'
+                            ? 'border-amber-500' 
+                            : 'border-transparent hover:bg-slate-800/50'
                         }`}
+                        style={{ backgroundColor: selectedPrompt?.name === prompt.name ? 'rgba(245,158,11,0.1)' : 'transparent' }}
                       >
-                        <div className="font-medium text-slate-800">{prompt.name}</div>
+                        <div className="font-medium text-slate-200">{prompt.name}</div>
                         <div className="text-xs text-slate-500 truncate mt-1">{prompt.description}</div>
                       </div>
                     ))}
                     {serverPrompts.length === 0 && (
-                      <div className="px-4 py-3 text-xs text-slate-400 italic">No prompts</div>
+                      <div className="px-4 py-3 text-xs text-slate-500 italic">No prompts</div>
                     )}
                   </div>
                 )}
@@ -118,28 +121,28 @@ export default function Prompts() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 bg-slate-50 flex flex-col h-full overflow-hidden">
+      <div className="flex-1 flex flex-col h-full overflow-hidden" style={{ backgroundColor: '#0B0F14' }}>
         {selectedPrompt ? (
           <div className="flex-1 overflow-y-auto p-8">
             <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm mb-8">
-                <div className="p-6 border-b border-slate-200">
+              <div className="rounded-xl border overflow-hidden shadow-sm mb-8" style={{ backgroundColor: '#131B24', borderColor: '#1e293b' }}>
+                <div className="p-6 border-b" style={{ borderColor: '#1e293b' }}>
                   <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-2xl font-bold text-slate-800">{selectedPrompt.name}</h2>
-                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                    <h2 className="text-2xl font-bold text-white">{selectedPrompt.name}</h2>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/20">
                       {selectedPrompt.serverName}
                     </span>
                   </div>
-                  <p className="text-slate-600 mb-6">{selectedPrompt.description}</p>
+                  <p className="text-slate-400 mb-6">{selectedPrompt.description}</p>
                   
                   {/* Arguments Form */}
                   <div className="mb-6">
-                    <h3 className="font-bold text-slate-700 mb-4 border-b pb-2">Prompt Arguments</h3>
+                    <h3 className="font-bold text-slate-300 mb-4 border-b pb-2" style={{ borderColor: '#1e293b' }}>Prompt Arguments</h3>
                     {selectedPrompt.arguments?.length > 0 ? (
                       <div className="space-y-4">
                         {selectedPrompt.arguments.map((arg: any) => (
                           <div key={arg.name}>
-                            <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                            <label className="block text-sm font-medium text-slate-300 mb-1 flex items-center gap-2">
                               {arg.name}
                               {arg.required && <span className="text-rose-500 text-xs">*</span>}
                             </label>
@@ -150,7 +153,8 @@ export default function Prompts() {
                               type="text"
                               value={formValues[arg.name] || ''}
                               onChange={(e) => setFormValues(prev => ({...prev, [arg.name]: e.target.value}))}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                              className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm text-white placeholder-slate-600 transition-colors"
+                              style={{ backgroundColor: '#0B0F14', borderColor: '#1e293b', borderWidth: 1 }}
                               placeholder={arg.required ? "Required" : "Optional"}
                             />
                           </div>
@@ -161,11 +165,12 @@ export default function Prompts() {
                     )}
                   </div>
 
-                  <div className="mt-8 pt-6 border-t border-slate-200">
+                  <div className="mt-8 pt-6 border-t" style={{ borderColor: '#1e293b' }}>
                     <button 
                       onClick={handleExecute}
                       disabled={getMutation.isPending}
-                      className="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-bold text-base transition-colors shadow-sm disabled:opacity-50"
+                      className="w-full flex justify-center items-center gap-2 rounded-md font-bold text-base transition-colors shadow-sm disabled:opacity-50 text-slate-900 hover:opacity-90"
+                      style={{ backgroundColor: '#F59E0B' }}
                     >
                       <Play size={18} />
                       {getMutation.isPending ? 'Generating...' : 'Get Prompt'}
@@ -176,16 +181,16 @@ export default function Prompts() {
 
               {/* Responses */}
               {getMutation.data && (
-                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-                   <div className="p-4 border-b border-slate-200 bg-slate-50">
-                     <h3 className="font-bold text-slate-700 flex items-center gap-2">
+                <div className="rounded-xl border overflow-hidden shadow-sm" style={{ backgroundColor: '#131B24', borderColor: '#1e293b' }}>
+                   <div className="p-4 border-b" style={{ borderColor: '#1e293b', backgroundColor: '#0B0F14' }}>
+                     <h3 className="font-bold text-white flex items-center gap-2">
                         {getMutation.data.error ? <X className="text-rose-500" size={18}/> : <Check className="text-emerald-500" size={18}/>}
                         {getMutation.data.error ? 'Error' : 'Rendered Prompt'}
                      </h3>
                    </div>
                    <div className="p-6">
-                     <div className="bg-slate-900 rounded-lg p-4 overflow-auto shadow-inner">
-                       <pre className={`text-sm font-mono whitespace-pre-wrap ${getMutation.data.error ? 'text-rose-400' : 'text-emerald-400'}`}>
+                     <div className="rounded-lg p-4 overflow-auto shadow-inner" style={{ backgroundColor: '#0B0F14' }}>
+                       <pre className={`text-sm font-mono whitespace-pre-wrap ${getMutation.data.error ? 'text-rose-400' : 'text-amber-400'}`}>
                          {getMutation.data.error ? getMutation.data.error : JSON.stringify(getMutation.data.result, null, 2)}
                        </pre>
                      </div>
@@ -195,9 +200,9 @@ export default function Prompts() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-slate-400">
+          <div className="flex-1 flex items-center justify-center text-slate-500">
             <div className="text-center">
-              <MessageSquare size={48} className="mx-auto mb-4 opacity-20" />
+              <MessageSquare size={48} className="mx-auto mb-4 opacity-20 text-slate-500" />
               <p>Select a prompt from the sidebar to view its details</p>
             </div>
           </div>
