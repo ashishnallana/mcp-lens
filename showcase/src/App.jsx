@@ -3,6 +3,7 @@ import {
   Terminal, Search, Play, Settings, Database, 
   ChevronRight, Package, Copy, Check
 } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import './index.css';
 import heroImg from './assets/img1.png';
 
@@ -40,15 +41,15 @@ const Navbar = () => (
 
 // Component: Hero
 const Hero = () => (
-  <section className="section" style={{ paddingTop: '160px', textAlign: 'center', minHeight: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+  <section className="section hero-section">
     <div className="ambient-glow" style={{ top: '20%', left: '50%', transform: 'translate(-50%, -50%)', width: '600px', height: '600px' }} />
     
     <div className="container">
       <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid var(--color-border)', color: 'var(--color-highlight)', fontSize: '14px', fontWeight: 600, marginBottom: '24px' }}>
-        ✨ v0.1.4 is now live on PyPI
+        ✨ v0.1.5 is now live on PyPI
       </div>
       
-      <h1 style={{ fontSize: '4rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '24px', letterSpacing: '-0.02em' }}>
+      <h1 className="hero-title">
         The <span className="text-gradient">Swagger UI</span> for<br/>Model Context Protocol
       </h1>
       
@@ -56,7 +57,7 @@ const Hero = () => (
         Instantly generate a beautiful, interactive testing dashboard for your MCP servers. No frontend code required. Plug and play in one line of code.
       </p>
       
-      <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '60px' }}>
+      <div className="hero-buttons">
         <a href="#quickstart" className="btn-primary">
           Get Started <ChevronRight size={18} />
         </a>
@@ -83,11 +84,11 @@ const Features = () => (
   <section id="features" className="section" style={{ background: 'rgba(245, 158, 11, 0.02)', borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }}>
     <div className="container">
       <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-        <h2 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '16px' }}>Everything you need to debug MCP</h2>
+        <h2 className="section-title">Everything you need to debug MCP</h2>
         <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.1rem' }}>Stop testing your agents blindly. Get a visual dashboard instantly.</p>
       </div>
       
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
         <div className="glass-panel" style={{ padding: '32px' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
             <Settings size={24} />
@@ -153,7 +154,7 @@ const Quickstart = () => (
     <div className="container">
       <div className="grid-2">
         <div>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '16px' }}>Plug and play.</h2>
+          <h2 className="section-title">Plug and play.</h2>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.1rem', marginBottom: '32px', lineHeight: 1.6 }}>
             MCP Lens is designed to be invisible when you don't need it, and incredibly powerful when you do. Just wrap your <code>FastMCP</code> instance.
           </p>
@@ -244,6 +245,25 @@ export default function App() {
 
   return (
     <>
+      <Helmet>
+        <title>MCP Lens - The Swagger UI for Model Context Protocol</title>
+        <meta name="description" content="Instantly generate a beautiful, interactive testing dashboard for your MCP servers. No frontend code required. Plug and play in one line of code." />
+        <meta name="keywords" content="MCP, Model Context Protocol, Swagger UI, LLM tools, agent testing, fastmcp, python, developer tools, dashboard" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="MCP Lens - The Swagger UI for Model Context Protocol" />
+        <meta property="og:description" content="Instantly generate a beautiful, interactive testing dashboard for your MCP servers. No frontend code required." />
+        <meta property="og:image" content="https://ashishnallana.github.io/mcp-lens/icon.png" />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:title" content="MCP Lens - The Swagger UI for Model Context Protocol" />
+        <meta property="twitter:description" content="Instantly generate a beautiful, interactive testing dashboard for your MCP servers. No frontend code required." />
+        <meta property="twitter:image" content="https://ashishnallana.github.io/mcp-lens/icon.png" />
+        
+        <link rel="canonical" href="https://ashishnallana.github.io/mcp-lens/" />
+      </Helmet>
       <Navbar />
       <Hero />
       <Features />
