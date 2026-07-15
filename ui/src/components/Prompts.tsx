@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { MessageSquare, Play, ChevronDown, ChevronRight, Check, X } from 'lucide-react';
+import { MessageSquare, Play, ChevronDown, ChevronRight, Check, X, Search } from 'lucide-react';
 
 export default function Prompts() {
   const [selectedPrompt, setSelectedPrompt] = useState<any>(null);
   const [expandedServers, setExpandedServers] = useState<Record<string, boolean>>({});
   const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: promptsData, isLoading } = useQuery({
     queryKey: ['prompts'],
@@ -45,14 +46,31 @@ export default function Prompts() {
     <div className="flex h-full">
       {/* Sidebar */}
       <div className="w-80 bg-white border-r border-slate-200 flex flex-col h-full">
-        <div className="p-4 border-b border-slate-200 bg-slate-50">
-          <h2 className="font-bold text-slate-700">Prompts Explorer</h2>
+        <div className="p-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+          <h2 className="font-bold text-slate-700 mb-3">Prompts Explorer</h2>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 text-slate-400" size={14} />
+            <input 
+              type="text" 
+              placeholder="Search prompts..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+            />
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto">
           {serverNames.length === 0 && <div className="p-4 text-sm text-slate-500">No servers connected.</div>}
           
           {serverNames.map(serverName => {
-            const serverPrompts = promptsMap[serverName] || [];
+            const rawPrompts = promptsMap[serverName] || [];
+            const serverPrompts = rawPrompts.filter((prompt: any) => 
+              prompt.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+              (prompt.description && prompt.description.toLowerCase().includes(searchQuery.toLowerCase()))
+            );
+
+            if (searchQuery && serverPrompts.length === 0) return null;
+
             const isExpanded = expandedServers[serverName] !== false;
             
             return (

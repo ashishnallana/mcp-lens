@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Database, Play, ChevronDown, ChevronRight, Check, X } from 'lucide-react';
+import { Database, Play, ChevronDown, ChevronRight, Check, X, Search } from 'lucide-react';
 
 export default function Resources() {
   const [selectedResource, setSelectedResource] = useState<any>(null);
   const [expandedServers, setExpandedServers] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: resourcesData, isLoading } = useQuery({
     queryKey: ['resources'],
@@ -40,14 +41,32 @@ export default function Resources() {
     <div className="flex h-full">
       {/* Sidebar */}
       <div className="w-80 bg-white border-r border-slate-200 flex flex-col h-full">
-        <div className="p-4 border-b border-slate-200 bg-slate-50">
-          <h2 className="font-bold text-slate-700">Resources Explorer</h2>
+        <div className="p-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+          <h2 className="font-bold text-slate-700 mb-3">Resources Explorer</h2>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 text-slate-400" size={14} />
+            <input 
+              type="text" 
+              placeholder="Search resources..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+            />
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto">
           {serverNames.length === 0 && <div className="p-4 text-sm text-slate-500">No servers connected.</div>}
           
           {serverNames.map(serverName => {
-            const serverResources = resourcesMap[serverName] || [];
+            const rawResources = resourcesMap[serverName] || [];
+            const serverResources = rawResources.filter((res: any) => 
+              (res.name && res.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
+              (res.uri && res.uri.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (res.description && res.description.toLowerCase().includes(searchQuery.toLowerCase()))
+            );
+
+            if (searchQuery && serverResources.length === 0) return null;
+
             const isExpanded = expandedServers[serverName] !== false;
             
             return (
