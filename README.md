@@ -21,7 +21,7 @@ MCP Lens automatically intercepts calls to your MCP Server (using `fastmcp`), ag
 To use MCP Lens in your project, simply install it via pip:
 
 ```bash
-pip install mcp-lens
+pip install mcp-lens-ui
 ```
 
 *(Note: Ensure your MCP server is built using the `fastmcp` package.)*
