@@ -125,6 +125,20 @@ export default function ToolExplorer() {
               <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                 <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                   <h3 className="font-bold text-slate-800 text-lg">Parameters</h3>
+                  
+                  {selectedTool.inputSchema && (
+                    <details className="relative group">
+                      <summary className="text-sm font-bold text-indigo-600 cursor-pointer list-none flex items-center gap-1 hover:text-indigo-800 bg-indigo-50 px-3 py-1 rounded-md border border-indigo-100 transition-colors">
+                        Schema
+                      </summary>
+                      <div className="absolute right-0 top-full mt-2 bg-slate-900 p-4 rounded-lg shadow-2xl z-20 w-[500px] border border-slate-700 hidden group-open:block">
+                        <div className="text-slate-400 text-xs mb-2 font-bold uppercase tracking-wider">Input Schema JSON</div>
+                        <pre className="text-xs font-mono text-emerald-400 whitespace-pre-wrap">
+                          {JSON.stringify(selectedTool.inputSchema, null, 2)}
+                        </pre>
+                      </div>
+                    </details>
+                  )}
                 </div>
                 
                 <div className="p-6">
