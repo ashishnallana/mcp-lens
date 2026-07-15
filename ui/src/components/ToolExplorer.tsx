@@ -1,15 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Play, CheckCircle2, XCircle, Lock, Unlock } from 'lucide-react';
+import { Play, CheckCircle2, XCircle, Lock, Unlock, ChevronDown, ChevronRight } from 'lucide-react';
 
 export default function ToolExplorer() {
   const [selectedTool, setSelectedTool] = useState<any>(null);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   
-  // Swagger-style Auth state
-  const [authToken, setAuthToken] = useState(localStorage.getItem('mcp_auth_token') || '');
+  // Multi-Server Auth state
+  const [authTokens, setAuthTokens] = useState<Record<string, string>>(() => {
+    const saved = localStorage.getItem('mcp_auth_tokens');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [tempToken, setTempToken] = useState('');
+  const [tempTokens, setTempTokens] = useState<Record<string, string>>({});
+
+  // Accordion state
+  const [expandedServers, setExpandedServers] = useState<Record<string, boolean>>({});
 
   const { data: toolsData, isLoading } = useQuery({
     queryKey: ['tools'],
@@ -19,8 +25,9 @@ export default function ToolExplorer() {
   const invokeMutation = useMutation({
     mutationFn: async (payload: any) => {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (authToken) {
-        headers['Authorization'] = `Bearer ${authToken}`;
+      const serverToken = authTokens[selectedTool.serverName];
+      if (serverToken) {
+        headers['Authorization'] = `Bearer ${serverToken}`;
       }
       
       const res = await fetch('/api/invoke', {
@@ -36,13 +43,22 @@ export default function ToolExplorer() {
     }
   });
 
+  // Default expand all servers on load
+  useEffect(() => {
+    if (toolsData?.tools) {
+      const initial: Record<string, boolean> = {};
+      Object.keys(toolsData.tools).forEach(k => initial[k] = true);
+      setExpandedServers(initial);
+    }
+  }, [toolsData]);
+
   if (isLoading) return <div className="p-8 text-slate-500 font-medium">Loading tools...</div>;
 
-  // tools is now a dictionary: { "Server Name": [tool1, tool2] }
   const servers = toolsData?.tools || {};
+  const serverNames = Object.keys(servers);
+  const totalTokens = Object.values(authTokens).filter(Boolean).length;
 
   const handleExecute = () => {
-    // Process form values based on schema (e.g. handle empty strings for optional fields)
     const payload = { ...formValues };
     Object.keys(payload).forEach(key => {
       if (payload[key] === '') delete payload[key];
@@ -51,14 +67,14 @@ export default function ToolExplorer() {
   };
 
   const saveAuth = () => {
-    setAuthToken(tempToken);
-    localStorage.setItem('mcp_auth_token', tempToken);
+    setAuthTokens(tempTokens);
+    localStorage.setItem('mcp_auth_tokens', JSON.stringify(tempTokens));
     setShowAuthModal(false);
   };
 
-  const logoutAuth = () => {
-    setAuthToken('');
-    localStorage.removeItem('mcp_auth_token');
+  const logoutAllAuth = () => {
+    setAuthTokens({});
+    localStorage.removeItem('mcp_auth_tokens');
     setShowAuthModal(false);
   };
 
@@ -73,12 +89,12 @@ export default function ToolExplorer() {
         </h1>
         <button 
           onClick={() => {
-            setTempToken(authToken);
+            setTempTokens({...authTokens});
             setShowAuthModal(true);
           }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md font-bold text-sm border-2 transition-colors ${authToken ? 'border-emerald-500 text-emerald-600 hover:bg-emerald-50' : 'border-indigo-500 text-indigo-600 hover:bg-indigo-50'}`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md font-bold text-sm border-2 transition-colors ${totalTokens > 0 ? 'border-emerald-500 text-emerald-600 hover:bg-emerald-50' : 'border-indigo-500 text-indigo-600 hover:bg-indigo-50'}`}
         >
-          {authToken ? <Lock size={16} /> : <Unlock size={16} />}
+          {totalTokens > 0 ? <Lock size={16} /> : <Unlock size={16} />}
           Authorize
         </button>
       </div>
@@ -87,31 +103,49 @@ export default function ToolExplorer() {
         {/* Tool List Sidebar */}
         <div className="w-80 border-r border-slate-200 bg-white overflow-y-auto">
           <div className="divide-y divide-slate-100">
-            {Object.entries(servers).map(([serverName, toolsList]: [string, any]) => (
-              <div key={serverName}>
-                <div className="bg-slate-100 px-4 py-2 font-bold text-slate-700 text-xs uppercase tracking-wider sticky top-0 border-b border-slate-200 shadow-sm flex items-center justify-between">
-                  <span>{serverName}</span>
-                  <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-[10px]">{toolsList.length}</span>
-                </div>
-                {toolsList.map((tool: any) => (
+            {serverNames.map((serverName) => {
+              const toolsList = servers[serverName];
+              const isExpanded = expandedServers[serverName];
+              const hasAuth = !!authTokens[serverName];
+              
+              return (
+                <div key={serverName}>
+                  {/* Collapsible Header */}
                   <div 
-                    key={tool.name}
-                    onClick={() => {
-                      setSelectedTool({...tool, serverName});
-                      setFormValues({});
-                      invokeMutation.reset();
-                    }}
-                    className={`p-4 cursor-pointer hover:bg-slate-50 transition-colors ${selectedTool?.name === tool.name && selectedTool?.serverName === serverName ? 'bg-slate-50 border-l-4 border-emerald-500' : 'border-l-4 border-transparent'}`}
+                    onClick={() => setExpandedServers(prev => ({...prev, [serverName]: !isExpanded}))}
+                    className="bg-slate-100 px-4 py-3 font-bold text-slate-700 text-xs uppercase tracking-wider sticky top-0 border-b border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:bg-slate-200 transition-colors z-10"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase">POST</span>
-                      <h3 className="font-semibold text-slate-800 truncate">{tool.name}</h3>
+                      {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      <span>{serverName}</span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-2 line-clamp-2">{tool.description}</p>
+                    <div className="flex items-center gap-2">
+                      {hasAuth && <span title="Authenticated"><Lock size={12} className="text-emerald-500" /></span>}
+                      <span className="bg-slate-300 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">{toolsList.length}</span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            ))}
+                  
+                  {/* Tools List */}
+                  {isExpanded && toolsList.map((tool: any) => (
+                    <div 
+                      key={tool.name}
+                      onClick={() => {
+                        setSelectedTool({...tool, serverName});
+                        setFormValues({});
+                        invokeMutation.reset();
+                      }}
+                      className={`p-4 cursor-pointer hover:bg-slate-50 transition-colors ${selectedTool?.name === tool.name && selectedTool?.serverName === serverName ? 'bg-slate-50 border-l-4 border-emerald-500' : 'border-l-4 border-transparent'}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase">POST</span>
+                        <h3 className="font-semibold text-slate-800 truncate">{tool.name}</h3>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-2 line-clamp-2">{tool.description}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -122,9 +156,12 @@ export default function ToolExplorer() {
               
               {/* Endpoint Header */}
               <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-                <div className="bg-blue-50 border-b border-blue-100 p-4 flex items-center gap-3">
-                  <span className="bg-blue-600 text-white px-3 py-1 rounded font-bold text-sm">POST</span>
-                  <span className="font-mono text-slate-700 font-semibold text-lg">/{selectedTool.name}</span>
+                <div className="bg-blue-50 border-b border-blue-100 p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="bg-blue-600 text-white px-3 py-1 rounded font-bold text-sm">POST</span>
+                    <span className="font-mono text-slate-700 font-semibold text-lg">/{selectedTool.name}</span>
+                  </div>
+                  <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold uppercase">{selectedTool.serverName}</span>
                 </div>
                 <div className="p-6">
                   <p className="text-slate-600 text-base">{selectedTool.description}</p>
@@ -242,8 +279,8 @@ export default function ToolExplorer() {
       {/* Auth Modal */}
       {showAuthModal && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-[500px] overflow-hidden">
-            <div className="border-b border-slate-200 p-4 flex justify-between items-center bg-slate-50">
+          <div className="bg-white rounded-xl shadow-xl w-[600px] overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="border-b border-slate-200 p-4 flex justify-between items-center bg-slate-50 shrink-0">
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                 <Lock size={20} className="text-slate-500" />
                 Available authorizations
@@ -252,29 +289,42 @@ export default function ToolExplorer() {
                 <XCircle size={24} />
               </button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="space-y-2">
-                <h4 className="font-bold text-slate-800">Bearer Auth (OAuth2 / HTTP)</h4>
-                <p className="text-sm text-slate-500">Enter your Bearer token below. It will be passed in the Authorization header to the server.</p>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Value:</label>
-                <input 
-                  type="text"
-                  placeholder="eyJhbGciOiJIUzI1NiIsIn..."
-                  value={tempToken}
-                  onChange={(e) => setTempToken(e.target.value)}
-                  className="w-full p-2 border border-slate-300 rounded font-mono text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
+            
+            <div className="p-6 overflow-y-auto space-y-6">
+              {serverNames.length === 0 ? (
+                <div className="text-slate-500 italic text-center">No servers available to authorize.</div>
+              ) : (
+                serverNames.map((serverName) => (
+                  <div key={serverName} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                    <div className="flex items-center gap-2 mb-3">
+                      <h4 className="font-bold text-slate-800">{serverName}</h4>
+                      {tempTokens[serverName] && <Lock size={14} className="text-emerald-500" />}
+                    </div>
+                    <div className="space-y-1 mb-3">
+                      <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Bearer Auth (OAuth2 / HTTP)</p>
+                      <p className="text-xs text-slate-400">Token will be passed in the Authorization header specifically for this server.</p>
+                    </div>
+                    <div>
+                      <input 
+                        type="text"
+                        placeholder="eyJhbGciOiJIUzI1NiIsIn..."
+                        value={tempTokens[serverName] || ''}
+                        onChange={(e) => setTempTokens({...tempTokens, [serverName]: e.target.value})}
+                        className="w-full p-2.5 border border-slate-300 rounded font-mono text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white"
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-            <div className="border-t border-slate-200 p-4 flex justify-end gap-3 bg-slate-50">
-              {authToken && (
+
+            <div className="border-t border-slate-200 p-4 flex justify-end gap-3 bg-slate-50 shrink-0">
+              {totalTokens > 0 && (
                 <button 
-                  onClick={logoutAuth}
+                  onClick={logoutAllAuth}
                   className="px-4 py-2 text-slate-600 font-bold hover:bg-slate-200 rounded transition-colors mr-auto"
                 >
-                  Logout
+                  Logout All
                 </button>
               )}
               <button 
