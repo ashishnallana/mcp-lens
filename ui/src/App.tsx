@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQueryClient, useQuery } from '@tanstack/react-query';
 import { LayoutDashboard, Wrench, Database, MessageSquare, History, Settings } from 'lucide-react';
+import logo from './assets/logo.png';
 
 const queryClient = new QueryClient();
 
@@ -19,8 +20,7 @@ function Sidebar() {
     <div className="w-64 border-r flex flex-col" style={{ backgroundColor: '#0B0F14', borderColor: '#1e293b' }}>
       <div className="p-6 flex items-center justify-center border-b" style={{ borderColor: '#1e293b' }}>
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="MCP Lens Logo" className="w-8 h-8 rounded-lg" />
-          <span className="text-xl font-bold tracking-widest text-white uppercase">MCP Lens</span>
+          <img src={logo} alt="MCP Lens Logo" className="h-8 rounded-lg" />
         </div>
       </div>
       <nav className="flex-1 p-4 space-y-1">

@@ -23,8 +23,7 @@ const Navbar = () => (
   }}>
     <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <img src="/logo.png" alt="MCP Lens Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
-        <span style={{ fontSize: '20px', fontWeight: 'bold' }}>MCP Lens</span>
+        <img src="/logo.png" alt="MCP Lens Logo" style={{ height: '32px', borderRadius: '8px' }} />
       </div>
       <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
         <a href="https://github.com/ashishnallana/mcp-lens" target="_blank" rel="noreferrer" style={{ color: 'var(--color-text-secondary)', transition: 'color 0.2s' }}>
@@ -249,8 +248,7 @@ const Footer = () => (
   <footer style={{ borderTop: '1px solid var(--color-border)', padding: '40px 0', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
     <div className="container">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px' }}>
-        <img src="/logo.png" alt="MCP Lens Logo" style={{ width: '24px', height: '24px', borderRadius: '6px' }} />
-        <span style={{ fontSize: '18px', fontWeight: 600, color: '#fff' }}>MCP Lens</span>
+        <img src="/logo.png" alt="MCP Lens Logo" style={{ height: '24px', borderRadius: '6px' }} />
       </div>
       <p style={{ fontSize: '14px', marginBottom: '24px' }}>Built for the modern AI developer. Open source under the MIT License.</p>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '24px' }}>
