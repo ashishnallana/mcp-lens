@@ -3,10 +3,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 import os
 from .api import router
-from ..storage.database import init_db
-
-# Initialize database schema
-init_db()
 
 app = FastAPI(title="MCP Lens", description="Developer Dashboard for Model Context Protocol")
 app.include_router(router)

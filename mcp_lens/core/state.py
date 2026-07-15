@@ -11,6 +11,7 @@ class AppState:
         self.tools: Dict[str, List[Dict[str, Any]]] = {}
         self.resources: Dict[str, List[Dict[str, Any]]] = {}
         self.prompts: Dict[str, List[Dict[str, Any]]] = {}
+        self.history: List[Dict[str, Any]] = []
         self.active_connections: List[Any] = []
 
     async def broadcast(self, message: dict):

@@ -1,20 +1,12 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
-from sqlalchemy.orm import Session
-from sqlalchemy import func
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 import time
+import uuid
+import datetime
 import asyncio
-from ..storage.database import SessionLocal, RequestHistory
 from ..core.state import app_state
 
 router = APIRouter()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get("/api/server")
 def get_server():
@@ -33,17 +25,19 @@ def get_prompts():
     return {"prompts": app_state.prompts}
 
 @router.get("/api/history")
-def get_history(limit: int = 50, offset: int = 0, db: Session = Depends(get_db)):
-    history = db.query(RequestHistory).order_by(RequestHistory.timestamp.desc()).offset(offset).limit(limit).all()
+def get_history(limit: int = 50, offset: int = 0):
+    # In-memory history, newest first
+    sorted_history = sorted(app_state.history, key=lambda x: x.get("timestamp", ""), reverse=True)
+    history = sorted_history[offset:offset+limit]
     return {"history": history}
 
 @router.get("/api/metrics")
-def get_metrics(db: Session = Depends(get_db)):
-    total = db.query(RequestHistory).count()
-    avg_latency = db.query(func.avg(RequestHistory.duration_ms)).scalar() or 0.0
+def get_metrics():
+    total = len(app_state.history)
+    avg_latency = sum(r.get("duration_ms", 0) for r in app_state.history) / total if total > 0 else 0.0
     
-    success_count = db.query(RequestHistory).filter(RequestHistory.status == "success").count()
-    error_count = db.query(RequestHistory).filter(RequestHistory.status == "error").count()
+    success_count = sum(1 for r in app_state.history if r.get("status") == "success")
+    error_count = sum(1 for r in app_state.history if r.get("status") == "error")
     
     return {
         "total_requests": total,
@@ -74,6 +68,15 @@ async def invoke_tool(req: InvokeRequest):
         "client_id": "MCP Lens UI"
     }))
     
+    record = {
+        "id": str(uuid.uuid4()),
+        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+        "server_name": req.server_name,
+        "tool_name": req.tool_name,
+        "arguments": req.arguments,
+        "client_id": "MCP Lens UI"
+    }
+
     try:
         # Call the tool directly
         if hasattr(mcp_app, "call_tool"):
@@ -90,25 +93,15 @@ async def invoke_tool(req: InvokeRequest):
         elif hasattr(result, "dict"):
             resp_dict = result.dict()
         elif isinstance(result, list):
-            # FastMCP tools often return lists of TextContent
             resp_dict = {"content": [r.model_dump() if hasattr(r, "model_dump") else str(r) for r in result]}
         else:
             resp_dict = {"output": str(result)}
             
-        # Log to DB
-        db = SessionLocal()
-        record = RequestHistory(
-            server_name=req.server_name,
-            tool_name=req.tool_name,
-            arguments=req.arguments,
-            response=resp_dict,
-            duration_ms=duration_ms,
-            status="success",
-            client_id="MCP Lens UI"
-        )
-        db.add(record)
-        db.commit()
-        db.close()
+        # Log to in-memory state
+        record["response"] = resp_dict
+        record["duration_ms"] = duration_ms
+        record["status"] = "success"
+        app_state.history.append(record)
         
         # Broadcast completion
         asyncio.create_task(app_state.broadcast({
@@ -122,19 +115,10 @@ async def invoke_tool(req: InvokeRequest):
         
     except Exception as e:
         duration_ms = (time.time() - start_time) * 1000
-        db = SessionLocal()
-        record = RequestHistory(
-            server_name=req.server_name,
-            tool_name=req.tool_name,
-            arguments=req.arguments,
-            error=str(e),
-            duration_ms=duration_ms,
-            status="error",
-            client_id="MCP Lens UI"
-        )
-        db.add(record)
-        db.commit()
-        db.close()
+        record["error"] = str(e)
+        record["duration_ms"] = duration_ms
+        record["status"] = "error"
+        app_state.history.append(record)
         
         asyncio.create_task(app_state.broadcast({
             "event_type": "ToolFailed",
@@ -200,7 +184,6 @@ async def websocket_endpoint(websocket: WebSocket):
     app_state.active_connections.append(websocket)
     try:
         while True:
-            # We don't expect much from the client, just keep connection open
             _ = await websocket.receive_text()
     except WebSocketDisconnect:
         if websocket in app_state.active_connections:

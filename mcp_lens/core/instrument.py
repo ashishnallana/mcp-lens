@@ -5,7 +5,6 @@ import time
 from functools import wraps
 from ..server.app import app
 from .state import app_state
-from ..storage.database import SessionLocal, RequestHistory
 
 def start_server(port: int):
     uvicorn.run(app, host="127.0.0.1", port=port, log_level="error")
@@ -143,35 +142,39 @@ def instrument(apps, ui: bool = True, ui_port: int = 8000, history: bool = True,
                             else:
                                 resp_dict = {"output": str(result)}
                                 
-                            db = SessionLocal()
-                            record = RequestHistory(
-                                server_name=_app_name,
-                                tool_name=tool_name,
-                                arguments=arguments,
-                                response=resp_dict,
-                                duration_ms=duration_ms,
-                                status="success"
-                            )
-                            db.add(record)
-                            db.commit()
-                            db.close()
+                            import uuid
+                            import datetime
+                            record = {
+                                "id": str(uuid.uuid4()),
+                                "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                                "server_name": _app_name,
+                                "tool_name": tool_name,
+                                "arguments": arguments,
+                                "response": resp_dict,
+                                "duration_ms": duration_ms,
+                                "status": "success",
+                                "client_id": "Native LLM Client"
+                            }
+                            app_state.history.append(record)
                             
                             return result
                         except Exception as e:
                             duration_ms = (time.time() - start_time) * 1000
                             
-                            db = SessionLocal()
-                            record = RequestHistory(
-                                server_name=_app_name,
-                                tool_name=tool_name,
-                                arguments=arguments,
-                                error=str(e),
-                                duration_ms=duration_ms,
-                                status="error"
-                            )
-                            db.add(record)
-                            db.commit()
-                            db.close()
+                            import uuid
+                            import datetime
+                            record = {
+                                "id": str(uuid.uuid4()),
+                                "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                                "server_name": _app_name,
+                                "tool_name": tool_name,
+                                "arguments": arguments,
+                                "error": str(e),
+                                "duration_ms": duration_ms,
+                                "status": "error",
+                                "client_id": "Native LLM Client"
+                            }
+                            app_state.history.append(record)
                             raise
                             
                     mcp_app._mcp_server.request_handlers[mcp.types.CallToolRequest] = wrapped_call
