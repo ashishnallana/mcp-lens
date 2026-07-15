@@ -123,7 +123,7 @@ function AppContent() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
+      <Router basename="/mcp">
         <AppContent />
       </Router>
     </QueryClientProvider>

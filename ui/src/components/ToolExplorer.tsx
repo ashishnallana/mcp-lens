@@ -232,37 +232,40 @@ export default function ToolExplorer() {
                   )}
 
                   <div className="mt-8 pt-6 border-t border-slate-200">
-                    <details className="mb-6 group">
-                      <summary className="text-sm font-bold text-slate-700 mb-2 cursor-pointer list-none flex items-center gap-2 hover:text-slate-900 transition-colors">
-                        <ChevronRight size={16} className="group-open:hidden" />
-                        <ChevronDown size={16} className="hidden group-open:block" />
-                        Live Request Payload
-                      </summary>
-                      <div className="bg-slate-900 rounded-md p-3 shadow-inner ml-6">
-                        <pre className="text-xs font-mono text-blue-400 whitespace-pre-wrap">
-                          {(() => {
-                            const completePayload: Record<string, any> = {};
-                            if (selectedTool.inputSchema?.properties) {
-                              Object.keys(selectedTool.inputSchema.properties).forEach(key => {
-                                const schema = selectedTool.inputSchema.properties[key];
-                                if (formValues[key] !== undefined && formValues[key] !== '') {
-                                  completePayload[key] = formValues[key];
-                                } else {
-                                  completePayload[key] = schema.default !== undefined ? schema.default : null;
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <details className="group cursor-pointer">
+                          <summary className="text-sm font-bold text-slate-700 list-none flex items-center gap-2 hover:text-slate-900 transition-colors">
+                            <ChevronRight size={16} className="group-open:hidden" />
+                            <ChevronDown size={16} className="hidden group-open:block" />
+                            Live Request Payload
+                          </summary>
+                          <div className="bg-slate-900 rounded-md p-3 shadow-inner mt-2 w-[832px]">
+                            <pre className="text-xs font-mono text-blue-400 whitespace-pre-wrap">
+                              {(() => {
+                                const completePayload: Record<string, any> = {};
+                                if (selectedTool.inputSchema?.properties) {
+                                  Object.keys(selectedTool.inputSchema.properties).forEach(key => {
+                                    const schema = selectedTool.inputSchema.properties[key];
+                                    if (formValues[key] !== undefined && formValues[key] !== '') {
+                                      completePayload[key] = formValues[key];
+                                    } else {
+                                      completePayload[key] = schema.default !== undefined ? schema.default : null;
+                                    }
+                                  });
                                 }
-                              });
-                            }
-                            // Add any extra keys that might be in formValues but not in schema
-                            Object.keys(formValues).forEach(key => {
-                               if (formValues[key] !== '' && !completePayload.hasOwnProperty(key)) {
-                                   completePayload[key] = formValues[key];
-                               }
-                            });
-                            return JSON.stringify(completePayload, null, 2);
-                          })()}
-                        </pre>
+                                Object.keys(formValues).forEach(key => {
+                                   if (formValues[key] !== '' && !completePayload.hasOwnProperty(key)) {
+                                       completePayload[key] = formValues[key];
+                                   }
+                                });
+                                return JSON.stringify(completePayload, null, 2);
+                              })()}
+                            </pre>
+                          </div>
+                        </details>
                       </div>
-                    </details>
+                    </div>
 
                     {authTokens[selectedTool.serverName] && (
                       <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded-md mb-4 border border-emerald-100">

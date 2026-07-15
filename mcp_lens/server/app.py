@@ -29,6 +29,11 @@ else:
     async def ui_not_found():
         return {"error": "UI static files not found. Run the frontend build process."}
 
+from fastapi.responses import RedirectResponse
+@app.get("/")
+async def redirect_to_mcp():
+    return RedirectResponse(url="/mcp")
+
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok"}
