@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { Activity, LayoutDashboard, Wrench, Database, MessageSquare, History, BarChart3, Settings } from 'lucide-react';
+import { Activity, LayoutDashboard, Wrench, Database, MessageSquare, History, Settings } from 'lucide-react';
 
 const queryClient = new QueryClient();
 
@@ -12,7 +12,6 @@ function Sidebar() {
     { name: 'Resources', path: '/resources', icon: <Database size={20} /> },
     { name: 'Prompts', path: '/prompts', icon: <MessageSquare size={20} /> },
     { name: 'History', path: '/history', icon: <History size={20} /> },
-    { name: 'Metrics', path: '/metrics', icon: <BarChart3 size={20} /> },
     { name: 'Settings', path: '/settings', icon: <Settings size={20} /> },
   ];
 
@@ -53,24 +52,64 @@ function Dashboard() {
   const { data: toolsData } = useQuery({
     queryKey: ['tools'],
     queryFn: () => fetch('/api/tools').then(res => res.json()),
-    refetchInterval: 5000
   });
+
+  const { data: resourcesData } = useQuery({
+    queryKey: ['resources'],
+    queryFn: () => fetch('/api/resources').then(res => res.json()),
+  });
+
+  const { data: promptsData } = useQuery({
+    queryKey: ['prompts'],
+    queryFn: () => fetch('/api/prompts').then(res => res.json()),
+  });
+
+  const totalServers = Object.keys(toolsData?.tools || {}).length;
+  const totalTools = Object.values(toolsData?.tools || {}).reduce((acc: number, arr: any) => acc + arr.length, 0);
+  const totalResources = Object.values(resourcesData?.resources || {}).reduce((acc: number, arr: any) => acc + arr.length, 0);
+  const totalPrompts = Object.values(promptsData?.prompts || {}).reduce((acc: number, arr: any) => acc + arr.length, 0);
 
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6 text-slate-800">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <h2 className="text-lg font-semibold text-slate-700 mb-4">Connected Context</h2>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-indigo-500">
+          <h3 className="text-sm font-medium text-slate-500 mb-2">Connected Servers</h3>
+          <p className="text-3xl font-bold text-slate-800">{totalServers}</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
+          <h3 className="text-sm font-medium text-slate-500 mb-2">Active Tools</h3>
+          <p className="text-3xl font-bold text-slate-800">{totalTools}</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-emerald-500">
+          <h3 className="text-sm font-medium text-slate-500 mb-2">Active Resources</h3>
+          <p className="text-3xl font-bold text-slate-800">{totalResources}</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-amber-500">
+          <h3 className="text-sm font-medium text-slate-500 mb-2">Active Prompts</h3>
+          <p className="text-3xl font-bold text-slate-800">{totalPrompts}</p>
+        </div>
+      </div>
+
+      <h2 className="text-lg font-semibold text-slate-700 mb-4">Execution Metrics</h2>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <h3 className="text-sm font-medium text-slate-500 mb-2">Total Requests</h3>
           <p className="text-3xl font-bold text-slate-800">{metrics?.total_requests ?? 0}</p>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="text-sm font-medium text-slate-500 mb-2">Active Tools</h3>
-          <p className="text-3xl font-bold text-slate-800">{toolsData?.tools?.length ?? 0}</p>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <h3 className="text-sm font-medium text-slate-500 mb-2">Avg Latency</h3>
           <p className="text-3xl font-bold text-slate-800">{metrics?.average_latency ?? 0} ms</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+          <h3 className="text-sm font-medium text-slate-500 mb-2">Success Rate</h3>
+          <p className="text-3xl font-bold text-emerald-600">{metrics?.success_rate ?? 100}%</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+          <h3 className="text-sm font-medium text-slate-500 mb-2">Error Rate</h3>
+          <p className="text-3xl font-bold text-rose-600">{metrics?.error_rate ?? 0}%</p>
         </div>
       </div>
     </div>
@@ -83,7 +122,6 @@ import ToolExplorer from './components/ToolExplorer';
 import HistoryPage from './components/History';
 import Resources from './components/Resources';
 import Prompts from './components/Prompts';
-import Metrics from './components/Metrics';
 import SettingsPage from './components/Settings';
 
 function AppContent() {
@@ -112,7 +150,6 @@ function AppContent() {
               <Route path="/resources" element={<Resources />} />
               <Route path="/prompts" element={<Prompts />} />
               <Route path="/history" element={<HistoryPage />} />
-              <Route path="/metrics" element={<Metrics />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </main>
