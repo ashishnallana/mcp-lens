@@ -146,6 +146,54 @@ async def invoke_tool(req: InvokeRequest):
         
         return {"error": str(e)}
 
+class ReadResourceRequest(BaseModel):
+    server_name: str
+    uri: str
+
+@router.post("/api/resource/read")
+async def read_resource(req: ReadResourceRequest):
+    if req.server_name not in app_state.servers:
+        return {"error": "Server not found"}
+    mcp_app = app_state.servers[req.server_name]
+    try:
+        if hasattr(mcp_app, "read_resource"):
+            result = await mcp_app.read_resource(req.uri)
+            # Serialize result
+            if isinstance(result, str) or isinstance(result, bytes):
+                return {"result": str(result)}
+            elif hasattr(result, "model_dump"):
+                return {"result": result.model_dump()}
+            elif hasattr(result, "dict"):
+                return {"result": result.dict()}
+            return {"result": str(result)}
+        else:
+            return {"error": "Server does not support reading resources"}
+    except Exception as e:
+        return {"error": str(e)}
+
+class GetPromptRequest(BaseModel):
+    server_name: str
+    prompt_name: str
+    arguments: dict
+
+@router.post("/api/prompt/get")
+async def get_prompt(req: GetPromptRequest):
+    if req.server_name not in app_state.servers:
+        return {"error": "Server not found"}
+    mcp_app = app_state.servers[req.server_name]
+    try:
+        if hasattr(mcp_app, "get_prompt"):
+            result = await mcp_app.get_prompt(req.prompt_name, req.arguments)
+            if hasattr(result, "model_dump"):
+                return {"result": result.model_dump()}
+            elif hasattr(result, "dict"):
+                return {"result": result.dict()}
+            return {"result": str(result)}
+        else:
+            return {"error": "Server does not support getting prompts"}
+    except Exception as e:
+        return {"error": str(e)}
+
 @router.websocket("/ws/events")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
