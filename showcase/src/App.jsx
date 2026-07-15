@@ -6,6 +6,7 @@ import {
 import { Helmet } from 'react-helmet-async';
 import './index.css';
 import heroImg from './assets/img1.png';
+import logoImg from './assets/logo.png';
 
 const Github = ({ size = 24, ...props }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -25,7 +26,7 @@ const Navbar = () => (
   }}>
     <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <img src="/logo.png" alt="MCP Lens Logo" style={{ height: '32px', borderRadius: '8px' }} />
+        <img src={logoImg} alt="MCP Lens Logo" style={{ height: '32px', borderRadius: '8px' }} />
       </div>
       <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
         <a href="https://github.com/ashishnallana/mcp-lens" target="_blank" rel="noreferrer" style={{ color: 'var(--color-text-secondary)', transition: 'color 0.2s' }}>
@@ -222,7 +223,7 @@ const Footer = () => (
   <footer style={{ borderTop: '1px solid var(--color-border)', padding: '40px 0', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
     <div className="container">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px' }}>
-        <img src="/logo.png" alt="MCP Lens Logo" style={{ height: '24px', borderRadius: '6px' }} />
+        <img src={logoImg} alt="MCP Lens Logo" style={{ height: '24px', borderRadius: '6px' }} />
       </div>
       <p style={{ fontSize: '14px', marginBottom: '24px' }}>Built for the modern AI developer. Open source under the MIT License.</p>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '24px' }}>
