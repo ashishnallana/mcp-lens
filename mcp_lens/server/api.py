@@ -53,19 +53,22 @@ def get_metrics(db: Session = Depends(get_db)):
     }
 
 class InvokeRequest(BaseModel):
+    server_name: str
     tool_name: str
     arguments: dict
 
 @router.post("/api/invoke")
 async def invoke_tool(req: InvokeRequest):
-    if not app_state.mcp_app:
-        return {"error": "MCP App not connected"}
+    if req.server_name not in app_state.servers:
+        return {"error": f"Server {req.server_name} not found or not connected"}
         
+    mcp_app = app_state.servers[req.server_name]
     start_time = time.time()
     
     # Broadcast start
     asyncio.create_task(app_state.broadcast({
         "event_type": "ToolStarted",
+        "server_name": req.server_name,
         "tool_name": req.tool_name,
         "arguments": req.arguments,
         "client_id": "MCP Lens UI"
@@ -73,8 +76,8 @@ async def invoke_tool(req: InvokeRequest):
     
     try:
         # Call the tool directly
-        if hasattr(app_state.mcp_app, "call_tool"):
-            result = await app_state.mcp_app.call_tool(req.tool_name, req.arguments)
+        if hasattr(mcp_app, "call_tool"):
+            result = await mcp_app.call_tool(req.tool_name, req.arguments)
         else:
             raise Exception("No call_tool method on the server")
             
@@ -95,6 +98,7 @@ async def invoke_tool(req: InvokeRequest):
         # Log to DB
         db = SessionLocal()
         record = RequestHistory(
+            server_name=req.server_name,
             tool_name=req.tool_name,
             arguments=req.arguments,
             response=resp_dict,
@@ -109,6 +113,7 @@ async def invoke_tool(req: InvokeRequest):
         # Broadcast completion
         asyncio.create_task(app_state.broadcast({
             "event_type": "ToolCompleted",
+            "server_name": req.server_name,
             "tool_name": req.tool_name,
             "duration_ms": duration_ms
         }))
@@ -119,6 +124,7 @@ async def invoke_tool(req: InvokeRequest):
         duration_ms = (time.time() - start_time) * 1000
         db = SessionLocal()
         record = RequestHistory(
+            server_name=req.server_name,
             tool_name=req.tool_name,
             arguments=req.arguments,
             error=str(e),
@@ -132,6 +138,7 @@ async def invoke_tool(req: InvokeRequest):
         
         asyncio.create_task(app_state.broadcast({
             "event_type": "ToolFailed",
+            "server_name": req.server_name,
             "tool_name": req.tool_name,
             "error": str(e),
             "duration_ms": duration_ms

@@ -27,6 +27,7 @@ export default function ToolExplorer() {
         method: 'POST',
         headers,
         body: JSON.stringify({
+          server_name: selectedTool.serverName,
           tool_name: selectedTool.name,
           arguments: payload
         })
@@ -37,7 +38,8 @@ export default function ToolExplorer() {
 
   if (isLoading) return <div className="p-8 text-slate-500 font-medium">Loading tools...</div>;
 
-  const tools = toolsData?.tools || [];
+  // tools is now a dictionary: { "Server Name": [tool1, tool2] }
+  const servers = toolsData?.tools || {};
 
   const handleExecute = () => {
     // Process form values based on schema (e.g. handle empty strings for optional fields)
@@ -85,21 +87,29 @@ export default function ToolExplorer() {
         {/* Tool List Sidebar */}
         <div className="w-80 border-r border-slate-200 bg-white overflow-y-auto">
           <div className="divide-y divide-slate-100">
-            {tools.map((tool: any) => (
-              <div 
-                key={tool.name}
-                onClick={() => {
-                  setSelectedTool(tool);
-                  setFormValues({});
-                  invokeMutation.reset();
-                }}
-                className={`p-4 cursor-pointer hover:bg-slate-50 transition-colors ${selectedTool?.name === tool.name ? 'bg-slate-50 border-l-4 border-emerald-500' : 'border-l-4 border-transparent'}`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase">POST</span>
-                  <h3 className="font-semibold text-slate-800 truncate">{tool.name}</h3>
+            {Object.entries(servers).map(([serverName, toolsList]: [string, any]) => (
+              <div key={serverName}>
+                <div className="bg-slate-100 px-4 py-2 font-bold text-slate-700 text-xs uppercase tracking-wider sticky top-0 border-b border-slate-200 shadow-sm flex items-center justify-between">
+                  <span>{serverName}</span>
+                  <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-[10px]">{toolsList.length}</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-2 line-clamp-2">{tool.description}</p>
+                {toolsList.map((tool: any) => (
+                  <div 
+                    key={tool.name}
+                    onClick={() => {
+                      setSelectedTool({...tool, serverName});
+                      setFormValues({});
+                      invokeMutation.reset();
+                    }}
+                    className={`p-4 cursor-pointer hover:bg-slate-50 transition-colors ${selectedTool?.name === tool.name && selectedTool?.serverName === serverName ? 'bg-slate-50 border-l-4 border-emerald-500' : 'border-l-4 border-transparent'}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase">POST</span>
+                      <h3 className="font-semibold text-slate-800 truncate">{tool.name}</h3>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2 line-clamp-2">{tool.description}</p>
+                  </div>
+                ))}
               </div>
             ))}
           </div>

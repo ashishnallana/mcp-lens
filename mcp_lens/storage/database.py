@@ -10,6 +10,7 @@ class RequestHistory(Base):
     id = Column(Integer, primary_key=True, index=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
     client_id = Column(String, index=True, nullable=True)
+    server_name = Column(String, index=True, nullable=True)
     tool_name = Column(String, index=True)
     arguments = Column(JSON)
     response = Column(JSON, nullable=True)

@@ -3,16 +3,15 @@ from typing import List, Dict, Any
 class AppState:
     def __init__(self):
         self.server_info: Dict[str, Any] = {
-            "name": "MCP Server",
-            "version": "0.1.0",
-            "transport": "stdio",
+            "name": "MCP Lens",
+            "version": "0.2.0",
             "status": "running"
         }
-        self.tools: List[Dict[str, Any]] = []
-        self.resources: List[Dict[str, Any]] = []
-        self.prompts: List[Dict[str, Any]] = []
+        self.servers: Dict[str, Any] = {}
+        self.tools: Dict[str, List[Dict[str, Any]]] = {}
+        self.resources: Dict[str, List[Dict[str, Any]]] = {}
+        self.prompts: Dict[str, List[Dict[str, Any]]] = {}
         self.active_connections: List[Any] = []
-        self.mcp_app = None
 
     async def broadcast(self, message: dict):
         """Broadcast an event to all connected UI clients."""
